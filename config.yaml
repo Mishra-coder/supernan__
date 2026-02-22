@@ -1,0 +1,16 @@
+pipeline:
+  input_video: "data/input/supernan_training.mp4"
+  output_dir: "data/output"
+  start_time: "00:00:15"
+  end_time: "00:00:30"
+
+models:
+  transcription: "large-v3"
+  translation: "indictrans2"
+  voice_cloning: "tts_models/multilingual/multi-dataset/xtts_v2"
+  lip_sync: "VideoReTalking"
+
+audio_processing:
+  vocal_isolation_model: "htdemucs"
+  sample_rate: 24000
+  channels: 1
