@@ -31,6 +31,14 @@ pip install -r requirements.txt
 
 ### Running the Pipeline
 You can configure the specific start/end timestamps and models in `config.yaml`.
+First, download the source video:
+```bash
+pip install gdown
+mkdir -p data/input
+gdown 1urRXU3HGjL30lXxQakqK_5rVjbH9XW3O -O data/input/supernan_training.mp4
+```
+
+Then execute the dubbing script:
 ```bash
 export GROQ_API_KEY="your_api_key"
 python dub_video.py --config config.yaml
