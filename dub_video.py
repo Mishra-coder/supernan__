@@ -11,27 +11,20 @@ from src.pipeline.voice_cloner import VoiceCloner
 from src.pipeline.lip_syncer import LipSyncer
 
 def process_segment(pipeline, start, end):
-    """Process a single 15-second segment of video through the dubbing pipeline."""
     print(f"\n--- Processing {start} to {end} ---")
     
-    # Set the chunk times
     pipeline['extractor'].start_time, pipeline['extractor'].end_time = start, end
     pipeline['syncer'].start_time, pipeline['syncer'].end_time = start, end
     
-    # 1. Extract audio from video & Isolate vocals from background noise
     pipeline['extractor'].extract_audio_chunk()
     vocal_path = pipeline['extractor'].isolate_vocals()
     
-    # 2. Transcribe the isolated vocals to English text with exact timestamps
     pipeline['transcriber'].transcribe_audio(vocal_path)
     
-    # 3. Translate the English transcription to context-aware Hindi
     pipeline['translator'].translate_transcription(pipeline['transcriber'].transcription_path)
     
-    # 4. Generate Hindi audio using voice cloning and align the length
     pipeline['cloner'].clone_and_sync_audio()
     
-    # 5. Lip Sync the generated Hindi audio with the cropped video segment
     return pipeline['syncer'].generate_lip_sync()
 
 def main():
@@ -44,7 +37,6 @@ def main():
         print(f"Error: {args.config} missing")
         return
 
-    # Initialize all modules
     pipeline = {
         'extractor': AudioExtractor(args.config),
         'transcriber': Transcriber(args.config),
@@ -55,7 +47,6 @@ def main():
 
     if args.full_video:
         print("[Scale Mode] Demonstrating full video processing via memory-safe batching.")
-        # In production, we detect silences to chunk video. Simulating 2 chunks here.
         chunks = [("00:00:00", "00:00:15"), ("00:00:15", "00:00:30")]
         
         for start, end in chunks:

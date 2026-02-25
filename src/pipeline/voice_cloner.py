@@ -28,10 +28,8 @@ class VoiceCloner:
         if 0.95 <= ratio <= 1.05:
             return audio_segment
             
-        # Pydub speedup
         speedup_audio = audio_segment.speedup(playback_speed=ratio, chunk_size=150, crossfade=25)
         
-        # Exact trim or pad
         if len(speedup_audio) > target_duration_ms:
             speedup_audio = speedup_audio[:target_duration_ms]
         elif len(speedup_audio) < target_duration_ms:
@@ -68,7 +66,6 @@ class VoiceCloner:
             target_duration_ms = end_ms - start_ms
             hindi_text = segment['translated_text']
             
-            # Add silence if there's a gap before this segment
             if start_ms > current_time_ms:
                 silence_gap = start_ms - current_time_ms
                 final_audio += AudioSegment.silent(duration=silence_gap)

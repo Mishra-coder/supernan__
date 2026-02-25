@@ -47,8 +47,6 @@ class LipSyncer:
         print("Starting VideoReTalking for high-fidelity lip sync...")
         print("Note: This assumes the VideoReTalking repository and environment are set up.")
         
-        # Command assumes we are calling the inference script of VideoReTalking
-        # which usually looks something like this:
         command = [
             'python', 'inference.py', 
             '--face', self.cropped_video_path, 
@@ -57,7 +55,6 @@ class LipSyncer:
         ]
         
         try:
-            # We don't suppress stdout here so the user can see the progress of the heavy model
             subprocess.run(command, check=True)
             print(f"\n=========================================")
             print(f"SUCCESS! Final Hindi Dubbed Video Generated at: {self.final_video_path}")
