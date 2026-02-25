@@ -23,18 +23,18 @@ class TextTranslator:
             
         translated_segments = []
         
-        print("Translating segments to Hindi using Groq (Context-Aware)...")
+        print("Translating segments from Kannada to Hindi using Groq (Context-Aware)...")
         for segment in transcription.get("segments", []):
             original_text = segment.get("text", "").strip()
             if not original_text:
                 continue
                 
             prompt = (
-                "You are an expert English to Hindi translator. "
-                "Translate the following spoken English sentence into natural, "
-                "context-aware conversational Hindi suitable for a nanny or child-caretaker context. "
+                "You are an expert Kannada to Hindi translator. "
+                "Translate the following spoken Kannada sentence into natural, "
+                "context-aware conversational Hindi. "
                 "Only return the Hindi translation, no extra text, explanations, or quotes.\n\n"
-                f"English: {original_text}"
+                f"Kannada: {original_text}"
             )
             
             try:
@@ -42,7 +42,7 @@ class TextTranslator:
                     messages=[
                         {
                             "role": "system",
-                            "content": "You are a precise and fluent English to Hindi translator."
+                            "content": "You are a precise and fluent Kannada to Hindi translator."
                         },
                         {
                             "role": "user",
@@ -79,7 +79,7 @@ class TextTranslator:
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Translate English transcription to Hindi.")
+    parser = argparse.ArgumentParser(description="Translate Kannada transcription to Hindi.")
     parser.add_argument("--transcription", type=str, required=True, help="Path to transcription JSON")
     parser.add_argument("--config", type=str, default="config.yaml")
     args = parser.parse_args()

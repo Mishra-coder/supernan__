@@ -15,7 +15,7 @@ class Transcriber:
         
         self.transcription_path = os.path.join(self.output_dir, "transcription.json")
 
-    def transcribe_audio(self, audio_path):
+    def transcribe_audio(self, audio_path, language="kn"):
         print(f"Loading WhisperX model ({self.model_size}) on {self.device}...")
         try:
             model = whisperx.load_model(self.model_size, self.device, compute_type=self.compute_type)
@@ -23,11 +23,11 @@ class Transcriber:
             print("Loading audio...")
             audio = whisperx.load_audio(audio_path)
             
-            print("Transcribing audio...")
-            result = model.transcribe(audio, batch_size=16)
+            print(f"Transcribing audio in {language} (Kannada)...")
+            result = model.transcribe(audio, batch_size=16, language=language)
             
             print("Aligning transcription with whisperx...")
-            model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=self.device)
+            model_a, metadata = whisperx.load_align_model(language_code=language, device=self.device)
             result = whisperx.align(result["segments"], model_a, metadata, audio, self.device, return_char_alignments=False)
             
             with open(self.transcription_path, 'w', encoding='utf-8') as f:
@@ -44,7 +44,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio", type=str, required=True, help="Path to input audio file")
     parser.add_argument("--config", type=str, default="config.yaml")
+    parser.add_argument("--language", type=str, default="kn", help="Language code (kn for Kannada)")
     args = parser.parse_args()
     
     transcriber = Transcriber(args.config)
-    transcriber.transcribe_audio(args.audio)
+    transcriber.transcribe_audio(args.audio, language=args.language)

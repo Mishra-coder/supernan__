@@ -1,5 +1,49 @@
 # Google Colab Par Kaise Run Karein
 
+## ⚠️ IMPORTANT: Python Version Issue
+
+**Problem:** TTS library Python 3.12 support nahi karti (requires Python 3.9-3.11)  
+**Solution:** Neeche diye gaye steps follow karo
+
+---
+
+## Quick Start (Agar Python 3.10/3.11 hai)
+
+Agar tumhara Colab Python 3.10 ya 3.11 use kar raha hai, seedha Step 1 se shuru karo.
+
+## Python 3.12 Fix (Agar error aa raha hai)
+
+Agar `ERROR: Could not find a version that satisfies the requirement TTS` aa raha hai, toh yeh karo:
+
+### Option A: Conda Environment (Recommended)
+```python
+# Cell 1: Conda install karo
+!pip install -q condacolab
+import condacolab
+condacolab.install_mambaforge()
+# ⚠️ Runtime restart hoga, phir neeche wale cells run karo
+
+# Cell 2: Python 3.11 environment banao
+!mamba create -n py311 python=3.11 -y
+
+# Cell 3: Dependencies install karo
+!mamba run -n py311 pip install -r requirements.txt
+
+# Baaki saare cells mein !python ki jagah !mamba run -n py311 python use karo
+```
+
+### Option B: Manual Python 3.11 Install
+```python
+!sudo apt-get update -y
+!sudo apt-get install -y python3.11 python3.11-venv python3.11-dev
+!python3.11 -m venv /content/py311
+!/content/py311/bin/pip install -r requirements.txt
+
+# Baaki cells mein !/content/py311/bin/python use karo
+```
+
+---
+
 ## Step 1: GitHub Par Upload Karo
 ```bash
 cd supernan_dubbing_pipeline
@@ -35,8 +79,17 @@ git push origin main
 
 ### Cell 3: Dependencies Install
 ```python
-!pip install -q -r requirements.txt
+# Pehle Python version check karo
+import sys
+print(f"Python version: {sys.version}")
+
+if sys.version_info >= (3, 12):
+    print("⚠️ Python 3.12 detected! See 'Python 3.12 Fix' section above")
+else:
+    !pip install -q -r requirements.txt
+    print("✅ Installation complete!")
 ```
+**Note:** Agar error aaye toh upar "Python 3.12 Fix" section dekho
 
 ### Cell 4: Video Download
 ```python
@@ -77,6 +130,9 @@ os.environ['GROQ_API_KEY'] = 'YOUR_KEY_HERE'
 ### Cell 8: Pipeline Run Karo
 ```python
 !python dub_video.py --config config.yaml
+# Agar Python 3.11 environment use kar rahe ho:
+# !mamba run -n py311 python dub_video.py --config config.yaml
+# Ya: !/content/py311/bin/python dub_video.py --config config.yaml
 ```
 **Time:** 15-20 minutes lagenge
 
