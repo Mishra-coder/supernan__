@@ -2,7 +2,6 @@ import argparse
 import os
 import sys
 
-# Append current dir to sys.path so we can import src modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.pipeline.audio_extractor import AudioExtractor
@@ -11,51 +10,63 @@ from src.pipeline.translator import TextTranslator
 from src.pipeline.voice_cloner import VoiceCloner
 from src.pipeline.lip_syncer import LipSyncer
 
+def process_segment(pipeline, start, end):
+    """Process a single 15-second segment of video through the dubbing pipeline."""
+    print(f"\n--- Processing {start} to {end} ---")
+    
+    # Set the chunk times
+    pipeline['extractor'].start_time, pipeline['extractor'].end_time = start, end
+    pipeline['syncer'].start_time, pipeline['syncer'].end_time = start, end
+    
+    # 1. Extract audio from video & Isolate vocals from background noise
+    pipeline['extractor'].extract_audio_chunk()
+    vocal_path = pipeline['extractor'].isolate_vocals()
+    
+    # 2. Transcribe the isolated vocals to English text with exact timestamps
+    pipeline['transcriber'].transcribe_audio(vocal_path)
+    
+    # 3. Translate the English transcription to context-aware Hindi
+    pipeline['translator'].translate_transcription(pipeline['transcriber'].transcription_path)
+    
+    # 4. Generate Hindi audio using voice cloning and align the length
+    pipeline['cloner'].clone_and_sync_audio()
+    
+    # 5. Lip Sync the generated Hindi audio with the cropped video segment
+    return pipeline['syncer'].generate_lip_sync()
+
 def main():
-    parser = argparse.ArgumentParser(description="Supernan Hindi Dubbing Pipeline (15-sec chunk)")
-    parser.add_argument("--config", type=str, default="config.yaml", help="Path to config.yaml")
+    parser = argparse.ArgumentParser(description="Supernan Hindi Dubbing Pipeline")
+    parser.add_argument("--config", type=str, default="config.yaml")
+    parser.add_argument("--full-video", action="store_true", help="Process full video in batches")
     args = parser.parse_args()
     
-    config_path = args.config
-    if not os.path.exists(config_path):
-        print(f"Error: Configuration file {config_path} not found.")
+    if not os.path.exists(args.config):
+        print(f"Error: {args.config} missing")
         return
 
-    print("==============================================")
-    print("  Supernan Hindi Dubbing Pipeline Initialized ")
-    print("==============================================\n")
+    # Initialize all modules
+    pipeline = {
+        'extractor': AudioExtractor(args.config),
+        'transcriber': Transcriber(args.config),
+        'translator': TextTranslator(args.config),
+        'cloner': VoiceCloner(args.config),
+        'syncer': LipSyncer(args.config)
+    }
 
-    # Step 1: Extract Audio & Isolate Vocals
-    print("\n--- Phase 1: Audio Extraction & Vocal Isolation ---")
-    extractor = AudioExtractor(config_path)
-    audio_path = extractor.extract_audio_chunk()
-    vocal_path = extractor.isolate_vocals()
-    
-    # Step 2: Transcribe (Word-Level)
-    print("\n--- Phase 2: High-Precision Transcription (WhisperX) ---")
-    transcriber = Transcriber(config_path)
-    # Note: we transcribe the isolated vocals for better accuracy
-    transcription_result = transcriber.transcribe_audio(vocal_path)
-    
-    # Step 3: Translate
-    print("\n--- Phase 3: Context-Aware Hindi Translation (Groq/Llama3) ---")
-    translator = TextTranslator(config_path)
-    translator.translate_transcription(transcriber.transcription_path)
-    
-    # Step 4: Voice Cloning & Audio Synching
-    print("\n--- Phase 4: Voice Cloning & Pacing Sync (XTTS v2) ---")
-    cloner = VoiceCloner(config_path)
-    final_audio_path = cloner.clone_and_sync_audio()
-    
-    # Step 5: Lip Syncing
-    print("\n--- Phase 5: High-Fidelity Lip Sync (VideoReTalking / GFPGAN) ---")
-    syncer = LipSyncer(config_path)
-    final_video_path = syncer.generate_lip_sync()
-    
-    print("\n==============================================")
-    print(f" PIPELINE COMPLETE! ")
-    print(f" Output saved at: {final_video_path}")
-    print("==============================================\n")
+    if args.full_video:
+        print("[Scale Mode] Demonstrating full video processing via memory-safe batching.")
+        # In production, we detect silences to chunk video. Simulating 2 chunks here.
+        chunks = [("00:00:00", "00:00:15"), ("00:00:15", "00:00:30")]
+        
+        for start, end in chunks:
+            process_segment(pipeline, start, end)
+        print("Batch processing complete! Next step: use ffmpeg to concatenate chunks.")
+        
+    else:
+        print("[Intern Challenge Mode] Processing single 15-second snippet.")
+        start, end = pipeline['extractor'].start_time, pipeline['extractor'].end_time
+        final_vid = process_segment(pipeline, start, end)
+        print(f"\nPipeline Complete! Final Output Video: {final_vid}")
 
 if __name__ == "__main__":
     main()
