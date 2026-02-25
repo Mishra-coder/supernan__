@@ -4,7 +4,11 @@ This repository contains a professional-grade Python pipeline designed to take a
 
 Built with a focus on resourcefulness and quality over simple API calling.
 
-## 🚀 The "Resourceful" Architecture
+## Submission Links
+- **Output Video**: [Link to Google Drive / YouTube with 15-30s output]
+- **Loom Walkthrough**: [Link to 5-min Loom explanatory video]
+
+## The "Resourceful" Architecture
 Instead of using a basic `Whisper -> Google Translate -> TTS -> Wav2Lip` chain, this pipeline uses specific, advanced open-source models to guarantee high fidelity:
 
 1. **Vocal Isolation (Demucs)**: Before cloning the voice or transcribing, we isolate the vocals from background noise. XTTS voice cloning works significantly better with clean vocal references.
@@ -32,8 +36,13 @@ export GROQ_API_KEY="your_api_key"
 python dub_video.py --config config.yaml
 ```
 
-## 💰 Cost Analysis at Scale
+## Cost Analysis at Scale
 If scaling this to **500 hours** of video overnight on a budget:
+
+**Estimated Cost Per Minute of Video:**
+At scale using standard cloud GPU instances (e.g. RTX 4090/A6000 at ~$0.80/hour):
+- Processing 1 minute of video takes ~3 minutes of GPU time.
+- **Cost per minute of video** = ~$0.04 (approx. ₹3.30)
 
 **Current Free/Open Source Setup:**
 - Translation (Groq Free Tier): $0
@@ -51,11 +60,11 @@ To process 500 hours overnight, we cannot rely on a single Colab notebook. We ne
   - At 10 GPUs running in parallel, it would take **6 days**, or we scale horizontally to **50 GPUs** to do it overnight (1500 / 50 = 30 hours).
 - **Optimization for Scale**: To reduce this cost, I would drop VideoReTalking (which is extremely heavy) and switch to a TensorRT optimized version of Wav2Lip, slicing the compute time and cost by 70%.
 
-## ⚠️ Known Limitations
+## Known Limitations
 - The VideoReTalking model is exceptionally slow on free-tier hardware.
 - XTTS sometimes introduces slight artifacts if the isolated Demucs vocal track still contains heavy breathing.
 
-## 🔮 What I'd Improve With More Time
+## What I'd Improve With More Time
 1. Implement a Gradio Web UI for easier timestamp selection and prompt engineering.
 2. Add automated background noise re-mixing (after dubbing the voice, layer the original background music back over the video).
 3. Dockerize the entire environment so users don't have to fiddle with `ffmpeg` and CUDA versions.
